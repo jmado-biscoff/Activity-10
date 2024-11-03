@@ -1,0 +1,38 @@
+---
+
+- name: Ensure required GPG keys are added (Ubuntu)
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Ensure required repositories and keys are added (Ubuntu)
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    filename: kibana
+  when: ansible_os_family == "Debian"
+
+- name: Update apt cache (Ubuntu)
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Kibana
+  package:
+    name: kibana
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Configure Kibana
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#?(server.host:)"
+    line: "server.host: \"localhost\""
+
+- name: Ensure Kibana is started and enabled
+  service:
+    name: kibana
+    state: started
+    enabled: yes
+  notify: restart kibana

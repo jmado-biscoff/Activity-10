@@ -1,0 +1,34 @@
+---
+
+- name: Ensure required repositories and keys are added (CentOS)
+  yum_repository:
+    name: logstash
+    description: "Logstash repository"
+    baseurl: "https://artifacts.elastic.co/packages/8.x/yum"
+    gpgcheck: yes
+    gpgkey: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Update package cache (CentOS)
+  yum:
+    name: "*"
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: Install Logstash
+  package:
+    name: logstash
+    state: present
+
+- name: Configure Logstash
+  copy:
+    src: ~/Activity-10/logstash.conf
+    dest: /etc/logstash/conf.d/logstash.conf
+
+- name: Start and enable Logstash
+  service:
+    name: logstash
+    state: started
+    enabled: yes
+  notify: restart logstash
